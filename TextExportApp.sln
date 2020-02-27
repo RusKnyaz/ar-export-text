@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextExportApp", "TextExportApp\TextExportApp.csproj", "{6ABE27CB-3FD8-426E-87D9-586F98CA4466}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextExport", "TextExport\TextExport.csproj", "{4A0F8DBA-FBAD-45B2-8975-F6C45C1F6589}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{B7C36061-0F39-4557-83E8-67C3BF16A188}"
+ProjectSection(SolutionItems) = preProject
+	readme.md = readme.md
+EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6ABE27CB-3FD8-426E-87D9-586F98CA4466}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ABE27CB-3FD8-426E-87D9-586F98CA4466}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ABE27CB-3FD8-426E-87D9-586F98CA4466}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ABE27CB-3FD8-426E-87D9-586F98CA4466}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A0F8DBA-FBAD-45B2-8975-F6C45C1F6589}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A0F8DBA-FBAD-45B2-8975-F6C45C1F6589}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A0F8DBA-FBAD-45B2-8975-F6C45C1F6589}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A0F8DBA-FBAD-45B2-8975-F6C45C1F6589}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
