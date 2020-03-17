@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Numerics;
+using System.Windows.Forms.VisualStyles;
 using GrapeCity.ActiveReports.Drawing;
 using GrapeCity.ActiveReports.Extensibility.Rendering;
+using TextMetrics = GrapeCity.ActiveReports.Drawing.TextMetrics;
 
 namespace TextExport
 {
@@ -71,57 +74,33 @@ namespace TextExport
 		public TextRenderingHintEx TextRenderingHint { get; set; }
 		public SmoothingModeEx SmoothingMode { get; set; }
 
-		public void DrawRectangle(PenEx pen, RectangleF rect)
-		{
-		}
+		public void DrawRectangle(PenEx pen, RectangleF rect) { }
 
-		public void FillRectangle(BrushEx brush, RectangleF rect)
-		{
-		}
+		public void FillRectangle(BrushEx brush, RectangleF rect) { }
 
 		public RectangleF ClipBounds { get; }
 
-		public void IntersectClip(RectangleF rect)
-		{
-		}
+		public void IntersectClip(RectangleF rect) { }
 
-		public void IntersectClip(PathEx path)
-		{
-		}
+		public void IntersectClip(PathEx path) { }
 
-		public void PushState()
-		{
-		}
+		public void PushState() { }
 
-		public void PopState()
-		{
-		}
+		public void PopState() { }
 
-		public void DrawEllipse(PenEx pen, RectangleF rect)
-		{
-		}
+		public void DrawEllipse(PenEx pen, RectangleF rect) { }
 
-		public void FillEllipse(BrushEx brush, RectangleF rect)
-		{
-		}
+		public void FillEllipse(BrushEx brush, RectangleF rect) { }
 
-		public void DrawPolygon(PenEx pen, PointF[] polygon)
-		{
-		}
+		public void DrawPolygon(PenEx pen, PointF[] polygon) { }
 
-		public void FillPolygon(BrushEx brush, PointF[] polygon)
-		{
-		}
+		public void FillPolygon(BrushEx brush, PointF[] polygon) { }
 
-		public void DrawLines(PenEx pen, PointF[] polyLine)
-		{
-		}
+		public void DrawLines(PenEx pen, PointF[] polyLine) { }
 
 		public Matrix3x2 Transform { get; set; } = Matrix3x2.Identity;
 
-		public void DrawAndFillPath(PenEx pen, BrushEx brush, PathEx path)
-		{
-		}
+		public void DrawAndFillPath(PenEx pen, BrushEx brush, PathEx path) { }
 
 
 		public void DrawString(string value, FontInfo font, BrushEx brush, RectangleF layoutRectangle,
@@ -142,7 +121,8 @@ namespace TextExport
 					(int) pts[0].X / (int) _settingsFontSizeTwips.Width,
 					(int) pts[0].Y / (int) _settingsFontSizeTwips.Height,
 					(int) w / (int) _settingsFontSizeTwips.Width,
-					(int) h / (int) _settingsFontSizeTwips.Height)
+					(int) h / (int) _settingsFontSizeTwips.Height),
+				Format = format
 			});
 		}
 
@@ -157,6 +137,7 @@ namespace TextExport
 		{
 			public string Value;
 			public Rectangle Bounds;
+			public StringFormatEx Format;
 		}
 
 		public void Write(TextWriter writer)
@@ -186,9 +167,23 @@ namespace TextExport
 			while (lineList.Count <= item.Bounds.Right)
 				lineList.Add(' ');
 
-			for (var x = 0; x < Math.Min(item.Bounds.Width, item.Value.Length); x++)
-				lineList[x + item.Bounds.Left] = item.Value[x];
+			var textLayout = TextLayout.SplitLines(item.Value, item.Format, item.Bounds.Width).ToList();
 
+
+			for (var y = 0; y < Math.Min(item.Bounds.Height, textLayout.Count); y++)
+			{
+				var line = textLayout[y];
+				
+				var drawLineWidth = Math.Min(item.Bounds.Width, line.Length);
+
+				var alignOffset = item.Format.Alignment == StringAlignmentEx.Center
+					? (item.Bounds.Width - drawLineWidth) / 2
+					: item.Format.Alignment == StringAlignmentEx.Far 
+						? item.Bounds.Width - drawLineWidth : 0;
+				
+				for (var x = 0; x < drawLineWidth; x++)
+					lineList[x + item.Bounds.Left + alignOffset] = item.Value[line.StartIndex + x];
+			}
 		}
 	}
 	
@@ -201,22 +196,29 @@ namespace TextExport
 		public TextMetrics MeasureString(FontInfo font, string contentText, StringFormatEx stringFormat,
 			float boundWidth = Single.MaxValue, float boundHeight = Single.MaxValue)
 		{ 
-			//todo: wrap, line breaking
 			var boundWidthChars = boundWidth == Single.MaxValue ? int.MaxValue : (int)(boundWidth / _settingsFontSizeTwips.Width);
 			var boundHeightChars = boundHeight == Single.MaxValue ? int.MaxValue : (int)(boundHeight / _settingsFontSizeTwips.Height);
-				
-			if(contentText.Length <= boundWidthChars)
-				return new TextMetrics(contentText.Length * _settingsFontSizeTwips.Width, _settingsFontSizeTwips.Height, 1, contentText.Length, true);
 
+			var lines = TextLayout.SplitLines(contentText, stringFormat, boundHeightChars).ToList();
 
-			var linesCount = (int)(contentText.Length / boundWidthChars);
-				
-				
-			if(linesCount <= boundHeightChars)
-				return new TextMetrics(boundWidthChars * _settingsFontSizeTwips.Width, linesCount * _settingsFontSizeTwips.Height, linesCount, contentText.Length, true);
-				
-			return new TextMetrics(boundWidthChars * _settingsFontSizeTwips.Width, boundHeightChars * _settingsFontSizeTwips.Height, linesCount,
-				boundHeightChars * boundWidthChars, false);
+			if (lines.Count == 0)
+				return new TextMetrics(0,0,0,0,true);
+
+			var realWidth = lines.Max(x => x.Length);
+
+			var fit = lines.Count <= boundHeightChars;
+
+			var fitLinesCount = Math.Min(lines.Count, boundHeightChars);
+
+			var lastFitLine = lines[fitLinesCount - 1];
+			
+			var totalFitCharsCount = lastFitLine.StartIndex + lastFitLine.Length;
+			
+			return new TextMetrics(
+				realWidth * _settingsFontSizeTwips.Width, 
+				fitLinesCount * _settingsFontSizeTwips.Height, 
+				fitLinesCount,
+				totalFitCharsCount * boundWidthChars, fit);
 		}
 				
 

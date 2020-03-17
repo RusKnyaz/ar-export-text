@@ -8,4 +8,10 @@
       <PackageReference Include="GrapeCity.ActiveReports" Version="14.0.19484" />
     </ItemGroup>
 
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>TextExportTests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
 </Project>
