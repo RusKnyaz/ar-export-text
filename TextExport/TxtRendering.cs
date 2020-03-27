@@ -28,7 +28,7 @@ namespace TextExport
 			var settingsFontSizeTwips = new Size(settings.FontSizePt.Width * 20, settings.FontSizePt.Height*20);
 
 			var metricsProvider = new MetricsProvider(settingsFontSizeTwips);
-			var targetDevice = CreateTargetDevice(report);
+			var targetDevice = (ITargetDevice) new TargetDevice(TargetDeviceKind.Export, InteractivityType.None, null, false, true);
 			var	layoutTree = GenerateLayoutTree(report, targetDevice, metricsProvider);
 
 			var page = layoutTree.Pages.First();
@@ -46,17 +46,9 @@ namespace TextExport
 			ITargetDevice targetDevice,
 			ITextMetricsProvider metricsProvider)
 		{
-			
-			
 			var layoutInfo = new LayoutInfo(report, targetDevice, metricsProvider);
 			var engine = GetLayoutEngine(report);
 			return engine.BuildLayout(layoutInfo);
-		}
-		
-		internal static ITargetDevice CreateTargetDevice(IReport report)
-		{
-			var targetDevice = new TargetDevice(TargetDeviceKind.Export, InteractivityType.None, null, false, true);
-			return targetDevice;
 		}
 
 		private static ILayoutEngine GetLayoutEngine(IReport report)

@@ -60,7 +60,7 @@ namespace TextExportApp
 	        using(var file = File.OpenRead(fileName))
 	        using (var reader = new StreamReader(file))
 	        {
-		        var report = PersistenceFilter.Load(reader);
+		        var report = PersistenceFilter.Load(reader).RemoveSpacing();
 		        return new ReportStore(report, new DefaultResourceLocator());    
 	        }
         }

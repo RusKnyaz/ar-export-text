@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <PackageReference Include="GrapeCity.ActiveReports" Version="14.0.19484" />
+      <PackageReference Include="GrapeCity.ActiveReports.Core.Rdl" Version="1.5.3300" />
     </ItemGroup>
 
     <ItemGroup>
