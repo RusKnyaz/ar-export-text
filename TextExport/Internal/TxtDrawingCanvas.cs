@@ -174,17 +174,15 @@ namespace TextExport
 			while (charList.Count <= item.Bounds.Bottom)
 				charList.Add(new List<char>());
 
-			//todo: bounds, alignment, etc
-
-			var lineList = charList[item.Bounds.Top];
-			while (lineList.Count <= item.Bounds.Right)
-				lineList.Add(' ');
-
 			var textLayout = TextLayout.SplitLines(item.Value, item.Format, item.Bounds.Width).ToList();
-
-
+			
 			for (var y = 0; y < Math.Min(item.Bounds.Height, textLayout.Count); y++)
 			{
+				var lineList = charList[item.Bounds.Top + y];
+				
+				while (lineList.Count <= item.Bounds.Right)
+					lineList.Add(' ');
+
 				var line = textLayout[y];
 				
 				var drawLineWidth = Math.Min(item.Bounds.Width, line.Length);
