@@ -27,7 +27,7 @@ namespace TextExport
 
 			var settingsFontSizeTwips = new Size(settings.FontSizePt.Width * 20, settings.FontSizePt.Height*20);
 
-			var metricsProvider = new MetricsProvider(settingsFontSizeTwips);
+			var metricsProvider = new TxtMetricsProvider(settingsFontSizeTwips);
 			var targetDevice = (ITargetDevice) new TargetDevice(TargetDeviceKind.Export, InteractivityType.None, null, false, true);
 			var	layoutTree = GenerateLayoutTree(report, targetDevice, metricsProvider);
 
