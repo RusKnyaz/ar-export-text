@@ -12,6 +12,7 @@ namespace TextExport
 	class TxtDrawingCanvas : IDrawingCanvas
 	{
 		private readonly Size _settingsFontSizeTwips;
+		private readonly string _lineSeparator;
 		private readonly Stack<CanvasState> _states = new Stack<CanvasState>();
 		private readonly List<TextItem> _items = new List<TextItem>();
 
@@ -141,9 +142,10 @@ namespace TextExport
 		}
 
 
-		public TxtDrawingCanvas(Size settingsFontSizeTwips)
+		public TxtDrawingCanvas(Size settingsFontSizeTwips, string lineSeparator = null)
 		{
 			_settingsFontSizeTwips = settingsFontSizeTwips;
+			_lineSeparator = lineSeparator ?? Environment.NewLine;
 		}
 
 		class TextItem
@@ -155,34 +157,36 @@ namespace TextExport
 
 		public void Write(TextWriter writer)
 		{
-			var charList = new List<List<char>>();
+			var lines = new List<List<char>>();
 
 			foreach (var item in _items)
-			{
-				Draw(charList, item);
-			}
+				Draw(lines, item);
+			
+			if(lines.Count == 0)
+				return;
 
-			foreach (var line in charList)
+			writer.Write(lines[0].ToArray());
+			foreach (var line in lines.Skip(1))
 			{
+				writer.Write(_lineSeparator);
 				writer.Write(line.ToArray());
-				writer.WriteLine();
 			}
 		}
 
 		private void Draw(List<List<char>> charList, TextItem item)
 		{
-			while (charList.Count <= item.Bounds.Bottom)
-				charList.Add(new List<char>());
-
 			var textLayout = TextLayout.SplitLines(item.Value, item.Format, item.Bounds.Width).ToList();
+
+			var realHeight = Math.Min(item.Bounds.Height, textLayout.Count);
 			
-			for (var y = 0; y < Math.Min(item.Bounds.Height, textLayout.Count); y++)
+			//fill empty lines at the top of the text item there are no
+			while (charList.Count < item.Bounds.Bottom)
+				charList.Add(new List<char>());
+			
+			for (var y = 0; y < realHeight; y++)
 			{
 				var lineList = charList[item.Bounds.Top + y];
 				
-				while (lineList.Count <= item.Bounds.Right)
-					lineList.Add(' ');
-
 				var line = textLayout[y];
 				
 				var drawLineWidth = Math.Min(item.Bounds.Width, line.Length);
@@ -191,6 +195,9 @@ namespace TextExport
 					? (item.Bounds.Width - drawLineWidth) / 2
 					: item.Format.Alignment == StringAlignmentEx.Far 
 						? item.Bounds.Width - drawLineWidth : 0;
+				
+				while (lineList.Count < item.Bounds.Left + drawLineWidth + alignOffset)
+					lineList.Add(' ');
 				
 				for (var x = 0; x < drawLineWidth; x++)
 					lineList[x + item.Bounds.Left + alignOffset] = item.Value[line.StartIndex + x];
