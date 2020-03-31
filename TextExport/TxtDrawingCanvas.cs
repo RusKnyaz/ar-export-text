@@ -4,7 +4,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Windows.Forms.VisualStyles;
 using GrapeCity.ActiveReports.Drawing;
 using GrapeCity.ActiveReports.Extensibility.Rendering;
 using TextMetrics = GrapeCity.ActiveReports.Drawing.TextMetrics;
@@ -14,6 +13,8 @@ namespace TextExport
 	class TxtDrawingCanvas : IDrawingCanvas
 	{
 		private readonly Size _settingsFontSizeTwips;
+		private readonly Stack<CanvasState> _states = new Stack<CanvasState>();
+		private readonly List<TextItem> _items = new List<TextItem>();
 
 		class NoBrush : BrushEx
 		{
@@ -78,15 +79,29 @@ namespace TextExport
 
 		public void FillRectangle(BrushEx brush, RectangleF rect) { }
 
-		public RectangleF ClipBounds { get; }
+		public RectangleF ClipBounds { get; private set; }
 
 		public void IntersectClip(RectangleF rect) { }
 
 		public void IntersectClip(PathEx path) { }
 
-		public void PushState() { }
+		struct CanvasState
+		{
+			public Matrix3x2 Transform;
+			public RectangleF ClipBounds;
+		}
 
-		public void PopState() { }
+		public void PushState()
+		{
+			_states.Push(new CanvasState{Transform =  Transform, ClipBounds = ClipBounds});
+		}
+
+		public void PopState()
+		{
+			var state = _states.Pop();
+			Transform = state.Transform;
+			ClipBounds = state.ClipBounds;
+		}
 
 		public void DrawEllipse(PenEx pen, RectangleF rect) { }
 
@@ -112,21 +127,20 @@ namespace TextExport
 			var w = pts[1].X - pts[0].X;
 			var h = pts[1].Y - pts[0].Y;
 
-
-			_items.Add(new TextItem()
+			var textItem = new TextItem()
 			{
 				Value = value,
-				//todo: apply transform
 				Bounds = new Rectangle(
-					(int) pts[0].X / (int) _settingsFontSizeTwips.Width,
-					(int) pts[0].Y / (int) _settingsFontSizeTwips.Height,
-					(int) w / (int) _settingsFontSizeTwips.Width,
-					(int) h / (int) _settingsFontSizeTwips.Height),
+					(int) (pts[0].X / _settingsFontSizeTwips.Width),
+					(int) (pts[0].Y / _settingsFontSizeTwips.Height),
+					(int) (w / _settingsFontSizeTwips.Width),
+					(int) (h / _settingsFontSizeTwips.Height)),
 				Format = format
-			});
+			};
+
+			_items.Add(textItem);
 		}
 
-		List<TextItem> _items = new List<TextItem>();
 
 		public TxtDrawingCanvas(Size settingsFontSizeTwips)
 		{

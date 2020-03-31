@@ -23,6 +23,8 @@ namespace TextExport
 						textBox.Style.PaddingTop = "0pt";
 						textBox.Style.PaddingLeft = "0pt";
 						textBox.Style.PaddingRight = "0pt";
+						textBox.Style.ShrinkToFit = "false";
+						textBox.Style.MinCondenseRate = "100";
 						break;
 					case TableRow tableRow:
 						tableRow.Height = "0pt";
