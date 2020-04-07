@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GrapeCity.ActiveReports.PageReportModel;
+using GrapeCity.Enterprise.Data.DataEngine.Extensions;
 
 namespace TextExport
 {
@@ -25,15 +26,15 @@ namespace TextExport
 						textBox.Style.PaddingRight = "0pt";
 						textBox.Style.ShrinkToFit = "false";
 						textBox.Style.MinCondenseRate = "100";
+						textBox.CanGrow = true;
 						break;
-					case TableRow tableRow:
-						tableRow.Height = "0pt";
+					case Tablix tablix:
+						foreach (var tablixRow in tablix.TablixBody.TablixRows)
+							tablixRow.Height = "0pt";
 						break;
-					case TablixRow tablixRow:
-						tablixRow.Height = "0pt";
-						break;
-					case MatrixRow matrixRow:
-						matrixRow.Height = "0pt";
+					case Table table:
+						foreach (var tableRow in table.GetRows())
+							tableRow.Height = "0pt";
 						break;
 				}
 			}
@@ -41,10 +42,20 @@ namespace TextExport
 			return result;
 		}
 
+		private static IEnumerable<TableRow> GetRows(this Table table)
+		{
+			return table.Header?.TableRows.SafeConcat(table.Details?.TableRows)
+				.SafeConcat(table.Footer?.TableRows)
+				.SafeConcat(table.TableGroups?.SelectMany(g => g.Header?.TableRows.SafeConcat(g.Footer?.TableRows)));
+		}
+
+		private static IEnumerable<T> SafeConcat<T>(this IEnumerable<T> col1, IEnumerable<T> col2) =>
+			 (col1 ?? Enumerable.Empty<T>()).Concat(col2 ?? Enumerable.Empty<T>());
+
 
 		private static IEnumerable<IReportComponent> Flat(this IReportComponent component) =>
 			component is IReportComponentContainer container
-				? container.Components.SelectMany(x => x.Flat())
+				? container.Components.SelectMany(x => x.Flat()).Append(container)
 				: Enumerable.Repeat(component, 1);
 	}
 }

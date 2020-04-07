@@ -25,8 +25,8 @@ namespace TextExportApp
 
 	        var reportName = args[0];
 
-	        var textSettings = new TxtSettings(){
-		        FontSizePt = new Size(6, 30)
+	        var textSettings = new TxtSettings{
+		        FontSizePt = new Size(6, 20)
 	        };
 
 	        if (args.Length > 1)
