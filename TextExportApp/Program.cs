@@ -44,7 +44,7 @@ namespace TextExportApp
 		        }
 	        }
 
-	        var reportDef = LoadReport(reportName);
+	        var reportDef = LoadReport(reportName, $"{textSettings.FontSizePt.Height}pt");
 
             var iReport = reportDef.BuildReport();
             
@@ -55,12 +55,12 @@ namespace TextExportApp
             }
         }
 
-        static ReportStore LoadReport(string fileName)
+        static ReportStore LoadReport(string fileName, string lineHeight)
         {
 	        using(var file = File.OpenRead(fileName))
 	        using (var reader = new StreamReader(file))
 	        {
-		        var report = PersistenceFilter.Load(reader).RemoveSpacing();
+		        var report = PersistenceFilter.Load(reader).RemoveSpacing(lineHeight);
 		        return new ReportStore(report, new DefaultResourceLocator());    
 	        }
         }

@@ -10,7 +10,7 @@ namespace TextExport
 		/// <summary>Removes paddings and rows heights.</summary>
 		/// <param name="report">The source report</param>
 		/// <returns>The report without spacing.</returns>
-		public static Report RemoveSpacing(this Report report)
+		public static Report RemoveSpacing(this Report report, string lineHeight)
 		{
 			//var result = report.Clone();
 			var result = report;
@@ -30,11 +30,11 @@ namespace TextExport
 						break;
 					case Tablix tablix:
 						foreach (var tablixRow in tablix.TablixBody.TablixRows)
-							tablixRow.Height = "0pt";
+							tablixRow.Height = lineHeight;
 						break;
 					case Table table:
 						foreach (var tableRow in table.GetRows())
-							tableRow.Height = "0pt";
+							tableRow.Height = lineHeight;
 						break;
 				}
 			}
