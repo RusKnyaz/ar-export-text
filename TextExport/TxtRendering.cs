@@ -12,9 +12,23 @@ using GrapeCity.ActiveReports.Rendering.Tools;
 
 namespace TextExport
 {
+	/// <summary> Describe how the item's paddings should be handled. </summary>
+	public enum PaddingsType
+	{
+		/// <summary> Adjust the paddings so that they become a multiple of the size of the font. </summary>
+		Adjust,
+		/// <summary>Remove paddings. </summary>
+		Remove,
+		/// <summary>Keeps the paddings as is.</summary>
+		Keep
+	
+	}
+	
 	public class TxtSettings
 	{
 		public Size FontSizePt = new Size(6, 12);
+		public PaddingsType HorizontalPaddings = PaddingsType.Adjust;
+		public string LineEnding = Environment.NewLine;
 	}
 	
 	public class TextRendering
@@ -24,7 +38,6 @@ namespace TextExport
 			if (report == null)
 				throw new ArgumentNullException(nameof(report));
 
-
 			var settingsFontSizeTwips = new Size(settings.FontSizePt.Width * 20, settings.FontSizePt.Height*20);
 
 			var metricsProvider = new TxtMetricsProvider(settingsFontSizeTwips);
@@ -33,7 +46,7 @@ namespace TextExport
 
 			var page = layoutTree.Pages.First();
 			
-			var canvas = new TxtDrawingCanvas(settingsFontSizeTwips);
+			var canvas = new TxtDrawingCanvas(settingsFontSizeTwips, settings.LineEnding);
 
 			var context = new GraphicsRenderContext(targetDevice, canvas, metricsProvider, RenderersFactory.Instance, null);
 				
@@ -41,6 +54,9 @@ namespace TextExport
 
 			canvas.Write(writer);
 		}
+
+		public static Report PrepareReport(Report report, TxtSettings settings) =>
+			report.Clone().RemoveSpacing(settings);
 		
 		private static ILayoutTree GenerateLayoutTree(IReport report, 
 			ITargetDevice targetDevice,
